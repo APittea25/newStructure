@@ -47,12 +47,9 @@ if uploaded_file:
             reverse_refs[source].add(target)
 
     # Improved logic to detect Calculations and Outputs
-    all_formula_cells = set()
-    referenced_cells = set()
-
-    for source, refs in dependencies.items():
-        all_formula_cells.add(source)
-        referenced_cells.update(refs)
+    for target, sources in dependencies.items():
+        for source in sources:
+            reverse_refs[source].add(target)
 
     for row in ws.iter_rows():
         for cell in row:
@@ -60,7 +57,7 @@ if uploaded_file:
             if ref in cell_types:
                 continue
             if cell.data_type == 'f':
-                if ref in referenced_cells:
+                if ref in reverse_refs:
                     cell_types[ref] = 'Calculation'
                 else:
                     cell_types[ref] = 'Output'
