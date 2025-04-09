@@ -47,24 +47,22 @@ if uploaded_file:
             reverse_refs[source].add(target)
 
     # Improved logic to detect Calculations and Outputs
-    all_refs = {f"{cell.column_letter}{cell.row}" for row in ws.iter_rows() for cell in row if cell.value is not None}
+    for row in ws.iter_rows():
+        for cell in row:
+            ref = f"{cell.column_letter}{cell.row}"
+            if ref in cell_types:
+                continue
 
-    for ref in all_refs:
-        is_input = cell_types.get(ref, '').startswith("Input")
-        is_formula = ref in dependencies
-        is_referenced = ref in reverse_refs
-        is_referencing = ref in dependencies and len(dependencies[ref]) > 0
-
-        if is_input:
-            continue
-        elif is_formula and is_referencing and is_referenced:
-            cell_types[ref] = "Calculation"
-        elif is_formula and not is_referencing and is_referenced:
-            cell_types[ref] = "Output"
-        elif is_formula:
-            cell_types[ref] = "Calculation"
-        else:
-            cell_types[ref] = "Other"
+            if cell.data_type == 'f':
+                formula = str(cell.value)
+                if '[' in formula and ']' in formula:
+                    cell_types[ref] = 'Input (external link)'
+                elif any(t.subtype in ['range', 'operand'] for t in Tokenizer(formula).items):
+                    cell_types[ref] = 'Calculation'
+                else:
+                    cell_types[ref] = 'Output'
+            else:
+                cell_types[ref] = 'Other'
 
     st.write("### 🧾 Cell Classification Result")
     results = sorted(cell_types.items())
