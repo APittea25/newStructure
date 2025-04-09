@@ -47,23 +47,16 @@ if uploaded_file:
             reverse_refs[source].add(target)
 
     # Improved logic to detect Calculations and Outputs
-    all_cells = set()
     for row in ws.iter_rows():
         for cell in row:
             ref = f"{cell.column_letter}{cell.row}"
-            all_cells.add(ref)
-
-    # Mark formula cells that are used by others as Calculations
-    for ref in dependencies:
-        if ref not in cell_types:
-            cell_types[ref] = 'Calculation'
-
-    # Mark formula cells that are not referenced by anyone as Outputs
-    for ref in dependencies:
-        if ref not in reverse_refs and cell_types.get(ref) == 'Calculation':
-            cell_types[ref] = 'Output'
-
-    # Catch any remaining formulas that weren't picked up by the original loop
+            if ref in cell_types:
+                continue
+            if cell.data_type == 'f':
+                if ref in reverse_refs:
+                    cell_types[ref] = 'Calculation'
+                else:
+                    cell_types[ref] = 'Output' that weren't picked up by the original loop
     for row in ws.iter_rows():
         for cell in row:
             ref = f"{cell.column_letter}{cell.row}"
