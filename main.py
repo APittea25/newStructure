@@ -46,12 +46,25 @@ if uploaded_file:
         for source in sources:
             reverse_refs[source].add(target)
 
-    for ref in dependencies:
-        if ref in reverse_refs and len(reverse_refs[ref]) > 0:
-            cell_types[ref] = 'Calculation'
+    # Improved logic to detect Calculations and Outputs
+    all_refs = {f"{cell.column_letter}{cell.row}" for row in ws.iter_rows() for cell in row if cell.value is not None}
+
+    for ref in all_refs:
+        is_input = cell_types.get(ref, '').startswith("Input")
+        is_formula = ref in dependencies
+        is_referenced = ref in reverse_refs
+        is_referencing = ref in dependencies and len(dependencies[ref]) > 0
+
+        if is_input:
+            continue
+        elif is_formula and is_referencing and is_referenced:
+            cell_types[ref] = "Calculation"
+        elif is_formula and not is_referencing and is_referenced:
+            cell_types[ref] = "Output"
+        elif is_formula:
+            cell_types[ref] = "Calculation"
         else:
-            if cell_types.get(ref) not in ['Input (external link)', 'Input (hardcoded)']:
-                cell_types[ref] = 'Output'
+            cell_types[ref] = "Other"
 
     st.write("### 🧾 Cell Classification Result")
     results = sorted(cell_types.items())
