@@ -53,7 +53,9 @@ if uploaded_file:
             if ref in cell_types:
                 continue
             if cell.data_type == 'f':
-                if ref in reverse_refs:
+                # Check if any formula in the sheet references this cell (i.e. outward dependency)
+                is_used_by_others = any(ref in refs for refs in dependencies.values())
+                if is_used_by_others:
                     cell_types[ref] = 'Calculation'  # Used elsewhere
                 else:
                     cell_types[ref] = 'Output'       # Terminal result
