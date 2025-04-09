@@ -47,22 +47,16 @@ if uploaded_file:
             reverse_refs[source].add(target)
 
     # Improved logic to detect Calculations and Outputs
-    for row in ws.iter_rows():
-        for cell in row:
-            ref = f"{cell.column_letter}{cell.row}"
-            if ref in cell_types:
-                continue
-            if cell.data_type == 'f':
-                if ref in reverse_refs:
-                    cell_types[ref] = 'Calculation'
-                else:
-                    cell_types[ref] = 'Output'
-    for row in ws.iter_rows():
-        for cell in row:
-            ref = f"{cell.column_letter}{cell.row}"
-            if ref not in cell_types:
-                if cell.data_type == 'f':
-                    cell_types[ref] = 'Calculation'
+    all_formula_refs = set(dependencies.keys())
+    all_referenced_cells = set()
+    for refs in dependencies.values():
+        all_referenced_cells.update(refs)
+
+    for ref in all_formula_refs:
+        if ref in all_referenced_cells:
+            cell_types[ref] = 'Calculation'
+        else:
+            cell_types[ref] = 'Output'
                 elif cell.value is not None:
                     cell_types[ref] = 'Other'
 
