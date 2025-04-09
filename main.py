@@ -57,8 +57,6 @@ if uploaded_file:
             cell_types[ref] = 'Calculation'
         else:
             cell_types[ref] = 'Output'
-                elif cell.value is not None:
-                    cell_types[ref] = 'Other'
 
     st.write("### 🧾 Cell Classification Result")
     results = sorted(cell_types.items())
