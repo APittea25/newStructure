@@ -56,7 +56,7 @@ if uploaded_file:
                 if ref in reverse_refs:
                     cell_types[ref] = 'Calculation'
                 else:
-                    cell_types[ref] = 'Output' that weren't picked up by the original loop
+                    cell_types[ref] = 'Output'
     for row in ws.iter_rows():
         for cell in row:
             ref = f"{cell.column_letter}{cell.row}"
