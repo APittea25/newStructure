@@ -47,18 +47,23 @@ if uploaded_file:
             reverse_refs[source].add(target)
 
     # Improved logic to detect Calculations and Outputs
+    all_formula_cells = set()
+    referenced_cells = set()
+
+    for source, refs in dependencies.items():
+        all_formula_cells.add(source)
+        referenced_cells.update(refs)
+
     for row in ws.iter_rows():
         for cell in row:
             ref = f"{cell.column_letter}{cell.row}"
             if ref in cell_types:
                 continue
             if cell.data_type == 'f':
-                # Check if any formula in the sheet references this cell (i.e. outward dependency)
-                is_used_by_others = any(ref in refs for refs in dependencies.values())
-                if is_used_by_others:
-                    cell_types[ref] = 'Calculation'  # Used elsewhere
+                if ref in referenced_cells:
+                    cell_types[ref] = 'Calculation'
                 else:
-                    cell_types[ref] = 'Output'       # Terminal result
+                    cell_types[ref] = 'Output'
             elif cell.value is not None:
                 cell_types[ref] = 'Other'
 
